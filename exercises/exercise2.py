@@ -2,6 +2,8 @@ from emulators.Device import Device
 from emulators.Medium import Medium
 from emulators.MessageStub import MessageStub
 
+import time
+import threading
 
 class RipMessage(MessageStub):
     def __init__(self, sender: int, destination: int, table):
@@ -32,6 +34,12 @@ class RipCommunication(Device):
         self.neighbors = [] # generate an appropriate list
 
         self.routing_table = dict()
+
+        # Create ring topology
+        if (index % number_of_devices == 0):
+            self.neighbors.append(index + 1)
+        else:
+            self.neighbors.append(index - 1)
 
     def run(self):
         for neigh in self.neighbors:
@@ -70,7 +78,23 @@ class RipCommunication(Device):
             self.medium().wait_for_next_round()
 
     def merge_tables(self, src, table):
-        # return None if the table does not change
+        Tl = self.routing_table
+
+        for Rr in Tl:
+            if Tl[Rr] not in table:
+                Tl[Rr] = Rr + 1
+                if self.index() is not Tl:
+                    Tl[Rr] = (src, Tl[Rr] + 1)
+                else:
+                    for Rl in Tl:
+                        if Rl is not Rr:
+                            Tl[Rl] = (src, Tl[Rr] + 1)
+
+            # print("row: ", row)
+            # print("Tl: ", Tl)
+            # print("Tl[row]: ", Tl[row])
+            # print("table: ", table)
+            # time.sleep(1000)
         pass
 
 
