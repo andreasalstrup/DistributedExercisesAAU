@@ -36,12 +36,22 @@ class RipCommunication(Device):
         self.routing_table = dict()
 
         # Create ring topology
-        if (index % number_of_devices == 0):
+        DEVICES = number_of_devices - 1
+        if index == 0:
             self.neighbors.append(index + 1)
+            self.neighbors.append(DEVICES)
+        elif index == DEVICES:
+            self.neighbors.append(index - 1)
+            self.neighbors.append(0)
         else:
+            self.neighbors.append(index + 1)
             self.neighbors.append(index - 1)
 
     def run(self):
+        #for neighbor in self.neighbors:
+        #    print(F"self: {self.index()} neighbor: {neighbor}")
+        #time.sleep(1000)
+        
         for neigh in self.neighbors:
             self.routing_table[neigh] = (neigh, 1)
         self.routing_table[self.index()] = (self.index(), 0)
@@ -78,8 +88,9 @@ class RipCommunication(Device):
             self.medium().wait_for_next_round()
 
     def merge_tables(self, src, table):
+        #time.sleep(1000)
+        
         Tl = self.routing_table
-
         for Rr in Tl:
             if Tl[Rr] not in table:
                 Tl[Rr] = Rr + 1
